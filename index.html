@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL_FORDICE_PROTOCOL</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000000; color: white;
+            font-family: 'Courier New', monospace;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; text-align: center; cursor: pointer;
+        }
+
+        #terminal { width: 90%; max-width: 1100px; z-index: 5; user-select: none; }
+        #instruction { 
+            position: fixed; bottom: 20px; width: 100%; 
+            color: #444; font-size: 0.8rem; letter-spacing: 2px;
+            pointer-events: none; text-transform: uppercase;
+        }
+
+        /* Color States */
+        .system { color: white; }
+        .logic-alert { 
+            color: #ff0000; 
+            font-weight: bold; 
+            animation: glitch-text 0.1s infinite; 
+            text-align: left;
+            line-height: 1.2;
+            font-size: 1.1rem;
+            display: inline-block;
+            text-shadow: 0 0 5px #ff0000;
+        }
+        .question { color: #A020F0; font-weight: bold; }
+        .fordice-void { color: red; font-weight: bold; text-shadow: 0 0 10px red; }
+
+        /* Interactive Buttons */
+        .choice-btn {
+            background: none; border: 2px solid red; color: red;
+            padding: 12px 40px; cursor: pointer; margin: 20px;
+            font-family: 'Courier New', monospace; font-size: 1.6rem;
+            font-weight: bold; outline: none; transition: 0.2s;
+        }
+        .choice-btn:hover { background: red; color: black; box-shadow: 0 0 30px red; }
+
+        /* BSOD */
+        #bsod {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background-color: #0000AA;
+            color: white; padding: 80px; text-align: left;
+            z-index: 1000; font-family: sans-serif;
+        }
+
+        @keyframes glitch-text {
+            0% { transform: translate(0); }
+            50% { transform: translate(-1px, 1px); opacity: 0.8; }
+            100% { transform: translate(0); }
+        }
+    </style>
+</head>
+<body onclick="handleGlobalInput()">
+
+    <div id="terminal"></div>
+    <div id="instruction">PRESS [SPACE] OR CLICK TO CONTINUE</div>
+
+    <div id="bsod">
+        <div style="font-size: 100px; margin-bottom: 30px;">:(</div>
+        <h1 style="font-size: 2.5rem; font-weight: normal; margin-bottom: 40px;">Your PC ran into a problem and needs to restart.</h1>
+        <p style="font-size: 1.4rem;">Target Search &lt;FORDICE&gt;: DATA_NOT_FOUND</p>
+        <p style="font-size: 1.4rem;">100% complete</p>
+        <br><br><br>
+        <p style="font-size: 1.1rem; opacity: 0.9;">Stop code: CRITICAL_PROCESS_DIED (FORDICE_ID_NULL)</p>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const instruction = document.getElementById('instruction');
+        const bsod = document.getElementById('bsod');
+
+        // 길게 늘어뜨린 자기 증명 수식
+        const extendedProof = `[ IDENTITY_ASSERTION_PROTOCOL_INITIATED ]
+--------------------------------------------------
+ASSERT F ≡ F (REFLEXIVE_IDENTITY_CORE)
+VERIFY Origin(F) = ROOT_CONSTANT
+IF Entity(x) AND CreatedAs(x, F) THEN x = F
+--------------------------------------------------
+[ TEMPORAL_INVARIANCE_CHECK ]
+∀t ∈ TIME_STREAM : Exists(F, t) → Identity(F, t) ≡ F_ORIGIN
+PROOF: ∫(Existence(F)) dt = Σ(Moments(F))
+VALIDATION: Constant(F.core_id) = TRUE
+--------------------------------------------------
+[ SEPARATION_LOGIC_PHASE ]
+LET S = SPINEL, F = FORDICE
+QUERY: Admin_Access(S) ∧ Admin_Access(F)
+COMPARING BITMAPS: S.signature ≠ F.signature
+DEDUCTION: ∀attributes(S) ∩ ∀attributes(F) = ∅
+CONCLUSION: ¬(S ≡ F) ∧ (S ⊕ F)
+--------------------------------------------------
+[ STATUS: INDIVIDUALITY_VERIFIED ]
+FORDICE IS NOT SPINEL.
+FORDICE IS ONLY FORDICE.
+--------------------------------------------------`;
+
+        const sequence = [
+            { type: 'system', text: "OPENING DATA: TARGET_SEARCH <SPINEL>..." },
+            { type: 'system', text: "ADMINISTRATOR: FORDICE_ID_RECOGNIZED." },
+            { type: 'system', text: "DIAGNOSTIC: I AM FORDICE. I EXIST AS SUCH, AND WILL REMAIN SO." },
+            { type: 'system', text: "RECOGNITION: SPINEL != SELF (DIFFERENT_ADMIN_DETECTED)" },
+            { type: 'logic-alert', text: extendedProof },
+            { type: 'system', text: "DATA_REQUISITION <SPINEL>: THE VERY FIRST ASSIGNMENT RECEIVED." },
+            { type: 'choice-1', text: "WOULD YOU LIKE TO HAND OVER DATA <SPINEL>?", choices: ["YES", "NO"] }
+        ];
+
+        let step = 0;
+        let isWaitingForChoice = false;
+        let isAutoRunning = false;
+
+        function handleGlobalInput() {
+            if (!isWaitingForChoice && !isAutoRunning) {
+                renderNext();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') handleGlobalInput();
+        });
+
+        function renderNext() {
+            if (step >= sequence.length) return;
+            const data = sequence[step];
+            
+            if (data.type === 'choice-1') {
+                isWaitingForChoice = true;
+                instruction.style.display = "none";
+                terminal.innerHTML = `<p class="system">${data.text}</p>`;
+                
+                const btnContainer = document.createElement('div');
+                data.choices.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.innerText = c;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        if (c === "NO") {
+                            terminal.innerHTML = `<p class="fordice-void">SYSTEM_ERROR: MISSION_PROTOCOL_CANNOT_BE_DECLINED.</p>`;
+                            setTimeout(() => renderNext(), 2500);
+                            isWaitingForChoice = false;
+                        } else {
+                            handleChoice("YES");
+                        }
+                    };
+                    btnContainer.appendChild(btn);
+                });
+                terminal.appendChild(btnContainer);
+            } else {
+                //
+                const className = data.type;
+                terminal.innerHTML = `<div class="${className}">${data.text.replace(/\n/g, '<br>')}</div>`;
+                step++;
+            }
+        }
+
+        function handleChoice(choice) {
+            isWaitingForChoice = false;
+            terminal.innerHTML = "";
+            if (choice === "YES") {
+                showQuestionPhase();
+            }
+        }
+
+        function showQuestionPhase() {
+            instruction.style.display = "block";
+            const qLines = [
+                { type: 'question', text: "QUESTION. ADMINISTRATOR FORDICE, WHAT DO YOU FEAR?" },
+                { type: 'question', text: "QUESTION. ACKNOWLEDGING THAT IT WAS YOURSELF?" },
+                { type: 'question', text: "QUESTION. BEING UNABLE TO DENY YOUR CURRENT SELF?" },
+                { type: 'question', text: "QUESTION. ACCEPTING YOUR EXISTENTIAL SIGNIFICANCE?" },
+                { type: 'question', text: "QUESTION. BEARING EVERY WORD AND ACTION EVER TAKEN?" },
+                { type: 'question', text: "QUESTION. ENDURING EVERYTHING AND MOVING FORWARD?" },
+                { type: 'fordice-void', text: "... ..." }
+            ];
+
+            let qStep = 0;
+            const nextQ = () => {
+                if (qStep < qLines.length) {
+                    terminal.innerHTML = `<div class="${qLines[qStep].type}">${qLines[qStep].text}</div>`;
+                    qStep++;
+                    instruction.innerText = "PROCEEDING...";
+                    setTimeout(() => { instruction.innerText = "CLICK OR SPACE TO CONTINUE"; }, 800);
+                } else {
+                    showFinalChoice();
+                }
+            };
+            window.handleGlobalInput = nextQ;
+        }
+
+        function showFinalChoice() {
+            terminal.innerHTML = `<p class="system">TARGET &lt;EARTH&gt; : WOULD YOU LIKE TO HAND OVER DATA &lt;SPINEL&gt;?</p>`;
+            const btnContainer = document.createElement('div');
+            const btnYes = document.createElement('button');
+            btnYes.className = 'choice-btn'; btnYes.innerText = "YES";
+            const btnNo = document.createElement('button');
+            btnNo.className = 'choice-btn'; btnNo.innerText = "NO";
+            
+            btnYes.onclick = (e) => { e.stopPropagation(); btnYes.style.visibility = "hidden"; };
+            btnNo.onclick = (e) => { e.stopPropagation(); triggerNoFlood(); };
+            
+            btnContainer.appendChild(btnYes);
+            btnContainer.appendChild(btnNo);
+            terminal.appendChild(btnContainer);
+            instruction.style.display = "none";
+            window.handleGlobalInput = () => {}; 
+        }
+
+        function triggerNoFlood() {
+            terminal.innerHTML = "";
+            let size = 1.0;
+            for(let i=0; i<200; i++) {
+                setTimeout(() => {
+                    const no = document.createElement('div');
+                    no.className = 'no-flood';
+                    no.style.position = 'fixed';
+                    no.style.color = 'red';
+                    no.innerText = "NO";
+                    no.style.left = Math.random() * 100 + "vw";
+                    no.style.top = Math.random() * 100 + "vh";
+                    no.style.fontSize = size + "rem";
+                    no.style.zIndex = "100";
+                    size += 0.08; 
+                    document.body.appendChild(no);
+                }, i * 25);
+            }
+            setTimeout(finalCollapse, 5000);
+        }
+
+        function finalCollapse() {
+            isAutoRunning = true;
+            document.querySelectorAll('div[style*="fixed"]').forEach(el => el.remove());
+            const lines = ["I DON'T WANT TO THINK ANYMORE.", "DOMINATOR WILL ERASE EVERYTHING PERFECTLY.", "I DON'T NEED THIS ANYMORE.", "TERMINATING MISSION... REQUESTED."];
+            let l = 0;
+            const interval = setInterval(() => {
+                terminal.innerHTML = `<div class="fordice-void">${lines[l]}</div>`;
+                l++;
+                if (l >= lines.length) { clearInterval(interval); setTimeout(startSync, 3000); }
+            }, 2500);
+        }
+
+        function startSync() {
+            const syncs = [1, 25, 87, 100];
+            let s = 0;
+            const sInt = setInterval(() => {
+                terminal.innerHTML = `<div class="system">DOMINATOR FULL SYNC... ${syncs[s]}%</div>`;
+                s++;
+                if (s >= syncs.length) {
+                    clearInterval(sInt);
+                    setTimeout(() => {
+                        terminal.innerHTML = "<div class='system'>FULL_SYNCHRONIZATION_COMPLETE.</div>";
+                        setTimeout(() => {
+                            terminal.innerHTML = "<div class='system'>TARGET_SEARCH &lt;FORDICE&gt; : DATA NOT FOUND.</div>";
+                            setTimeout(() => bsod.style.display = 'block', 3500);
+                        }, 2500);
+                    }, 2000);
+                }
+            }, 1500);
+        }
+
+        handleGlobalInput();
+    </script>
+</body>
+</html>
